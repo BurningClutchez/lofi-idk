@@ -11,7 +11,7 @@ ARG NODE_VERSION=22
 FROM node:${NODE_VERSION}-alpine as base
 
 # Set working directory for all build stages.
-WORKDIR /usr/src/app
+WORKDIR /usr/src/
 
 
 ################################################################################
@@ -38,6 +38,8 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=cache,target=/root/.yarn \
     yarn install --frozen-lockfile
 
+RUN mkdir -p node_modules/.cache && chmod -R 777 node_modules/.cache
+
 # Copy the rest of the source files into the image.
 COPY . .
 # Run the build script.
@@ -59,8 +61,11 @@ COPY package.json .
 
 # Copy the production dependencies from the deps stage and also
 # the built application from the build stage into the image.
-COPY --from=deps /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app//Users/burningclutchez/github/output-dir .//Users/burningclutchez/github/output-dir
+COPY --from=deps /usr/src/node_modules ./node_modules
+ADD public /usr/src/public
+ADD src /usr/src/src
+# COPY --from=build /usr/src/ ./public
+# COPY --from=base /usr/src/ ./lofi-idk
 
 
 # Expose the port that the application listens on.
